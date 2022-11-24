@@ -1,7 +1,7 @@
 -----------------------
 ----   Variables   ----
 -----------------------
-local QBCore = exports['qb-core']:GetCoreObject()
+local QBCore = exports['esx-core']:GetCoreObject()
 local RepairCosts = {}
 
 -----------------------
@@ -19,7 +19,7 @@ end
 ----   Callbacks   ----
 -----------------------
 
-QBCore.Functions.CreateCallback('qb-customs:server:GetLocations', function(_, cb)
+QBCore.Functions.CreateCallback('esx-customs:server:GetLocations', function(_, cb)
     cb(Config.Locations)
 end)
 
@@ -32,10 +32,10 @@ AddEventHandler("playerDropped", function()
     RepairCosts[source] = nil
 end)
 
-RegisterNetEvent('qb-customs:server:attemptPurchase', function(type, upgradeLevel, location)
+RegisterNetEvent('esx-customs:server:attemptPurchase', function(type, upgradeLevel, location)
     local source = source
-    local Player = QBCore.Functions.GetPlayer(source)
-    local job = Player.PlayerData.job.name
+    local Player = ESX.GetPlayerFromId(source)
+    local job = Player.job.name
     local moneyType = Config.MoneyType
     local balance = Player.Functions.GetMoney(moneyType)
     local price
@@ -67,8 +67,8 @@ RegisterNetEvent('qb-customs:server:attemptPurchase', function(type, upgradeLeve
         end
     end
     if paidBySociety then
-        if exports['qb-management']:GetAccount(job) >= price then
-            exports['qb-management']:RemoveMoney(job, price)
+        if exports['esx-management']:GetAccount(job) >= price then
+            exports['esx-management']:RemoveMoney(job, price)
         else
             paidBySociety = false
             TriggerClientEvent('QBCore:Notify', source, "Your job society can't pay for this. You will be charged instead.")
@@ -79,39 +79,39 @@ RegisterNetEvent('qb-customs:server:attemptPurchase', function(type, upgradeLeve
             Player.Functions.RemoveMoney(moneyType, price, "bennys")
         end
         if jobRestricted and job ~= 'mechanic' then
-            exports['qb-management']:AddMoney("mechanic", price)
+            exports['esx-management']:AddMoney("mechanic", price)
         end
-        TriggerClientEvent('qb-customs:client:purchaseSuccessful', source)
+        TriggerClientEvent('esx-customs:client:purchaseSuccessful', source)
     else
-        TriggerClientEvent('qb-customs:client:purchaseFailed', source)
+        TriggerClientEvent('esx-customs:client:purchaseFailed', source)
     end
 end)
 
-RegisterNetEvent('qb-customs:server:updateRepairCost', function(cost)
+RegisterNetEvent('esx-customs:server:updateRepairCost', function(cost)
     local source = source
     RepairCosts[source] = cost
 end)
 
-RegisterNetEvent("qb-customs:server:updateVehicle", function(myCar)
+RegisterNetEvent("esx-customs:server:updateVehicle", function(myCar)
     if IsVehicleOwned(myCar.plate) then
         MySQL.update('UPDATE player_vehicles SET mods = ? WHERE plate = ?', { json.encode(myCar), myCar.plate })
     end
 end)
 
 -- Use this event to dynamically enable/disable a location. Can be used to change anything at a location.
--- TriggerEvent('qb-customs:server:UpdateLocation', 'Hayes', 'settings', 'enabled', test)
+-- TriggerEvent('esx-customs:server:UpdateLocation', 'Hayes', 'settings', 'enabled', test)
 
-RegisterNetEvent('qb-customs:server:UpdateLocation', function(location, type, key, value)
+RegisterNetEvent('esx-customs:server:UpdateLocation', function(location, type, key, value)
     local source = source
     if not QBCore.Functions.HasPermission(source, 'god') then return CancelEvent() end
     Config.Locations[location][type][key] = value
-    TriggerClientEvent('qb-customs:client:UpdateLocation', -1, location, type, key, value)
+    TriggerClientEvent('esx-customs:client:UpdateLocation', -1, location, type, key, value)
 end)
 
 -- name, help, args, argsrequired, cb, perms
-QBCore.Commands.Add('customs', 'Open customs (admin only)', {}, false, function(source)
-    local ped = GetPlayerPed(source)
-    TriggerClientEvent('qb-customs:client:EnterCustoms', source, {
+ESX.RegisterCommand({'customs'}, 'admin', function(xPlayer, args, showError)
+    local ped = GetPlayerPed(xPlayer.source)
+    TriggerClientEvent('esx-customs:client:EnterCustoms', xPlayer.source, {
         coords = GetEntityCoords(ped),
         heading = GetEntityHeading(ped),
         categories = {
@@ -131,4 +131,4 @@ QBCore.Commands.Add('customs', 'Open customs (admin only)', {}, false, function(
             cosmetics = true,
         }
     })
-end, 'admin')
+end, false, {help = 'Open customs (admin only)'})

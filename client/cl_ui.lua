@@ -206,7 +206,7 @@ function InitiateMenus(isMotorcycle, vehicleHealth, categories, welcomeLabel)
     if vehicleHealth < 1000.0 and categories.repair then
         local repairCost = math.ceil(Config.BaseRepairPrice + ((1000 - vehicleHealth) * Config.RepairPriceMultiplier))
         if repairCost > 0 then
-            TriggerServerEvent("qb-customs:server:updateRepairCost", repairCost)
+            TriggerServerEvent("esx-customs:server:updateRepairCost", repairCost)
             createMenu("repairMenu", welcomeLabel, "Repair Vehicle")
             populateMenu("repairMenu", -1, "Repair", "$" .. repairCost)
             finishPopulatingMenu("repairMenu")

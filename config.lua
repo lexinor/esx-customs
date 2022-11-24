@@ -6,7 +6,7 @@ Config.RepairMoneyType = 'cash'
 Config.DefaultRepairPrice = 600 -- Repair price that is used if a vehicle-specific price is not available
 Config.BaseRepairPrice = 0 -- Starting repair price. Every player's vehicle damage (0-1000) is added to it later. If the final price is 0 or less, the repair menu does not appear
 Config.RepairPriceMultiplier = 1.0 -- Every player's vehicle damage (0-1000) is multiplier by this number, and then added to the base repair price
-Config.UseRadial = false -- Will use qb-radial menu for entering instead of press E
+Config.UseRadial = false -- Will use esx-radial menu for entering instead of press E
 Config.allowGovPlateIndex = false -- Setting this to true will allow all vehicles to purchase gov plate index "Blue on White #3" (only for emergency vehicles otherwise)
 
 Config.DisableWhenMechanicsOnline = false -- Disables customs completely if enough mechanics are online and on-duty

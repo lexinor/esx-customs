@@ -1,8 +1,7 @@
 -----------------------
 ----   Variables   ----
 -----------------------
-QBCore = exports['qb-core']:GetCoreObject()
-local PlayerData = QBCore.Functions.GetPlayerData()
+local PlayerData = ESX.GetPlayerData()
 local CustomsData = {}
 
 local isPlyInBennys = false
@@ -40,7 +39,7 @@ local function saveVehicle()
     local plyPed = PlayerPedId()
     local veh = GetVehiclePedIsIn(plyPed, false)
     local myCar = QBCore.Functions.GetVehicleProperties(veh)
-    TriggerServerEvent('qb-customs:server:updateVehicle', myCar)
+    TriggerServerEvent('esx-customs:server:updateVehicle', myCar)
 end
 
 local function CreateBlip(blipData)
@@ -109,7 +108,7 @@ function AttemptPurchase(type, upgradeLevel)
     if upgradeLevel ~= nil then
         upgradeLevel = upgradeLevel + 2
     end
-    TriggerServerEvent("qb-customs:server:attemptPurchase", type, upgradeLevel, CustomsData.location)
+    TriggerServerEvent("esx-customs:server:attemptPurchase", type, upgradeLevel, CustomsData.location)
 
     attemptingPurchase = true
 
@@ -751,7 +750,7 @@ function EnterLocation(override)
         end
     elseif override then canEnter = true end
 
-    QBCore.Functions.TriggerCallback('qb-vehicletuning:server:IsMechanicAvailable', function(currentMechanics)
+    ESX.TriggerServerCallback('esx-vehicletuning:server:IsMechanicAvailable', function(currentMechanics)
         if currentMechanics >= Config.MinOnlineMechanics and not override and PlayerData.job.name ~= 'mechanic' then
             repairOnly = true
             for k, v in pairs(Config.DisabledCategoriesMechanics) do
@@ -778,11 +777,11 @@ function EnterLocation(override)
         end
 
         if Config.UseRadial and radialMenuItemId then
-            exports['qb-radialmenu']:RemoveOption(radialMenuItemId)
+            exports['esx-radialmenu']:RemoveOption(radialMenuItemId)
             radialMenuItemId = nil
         end
 
-        exports['qb-core']:HideText()
+        exports['esx-core']:HideText()
 
         local plyPed = PlayerPedId()
         local plyVeh = GetVehiclePedIsIn(plyPed, false)
@@ -861,7 +860,7 @@ function DisableControls(repairOnly)
 end
 
 function GetLocations()
-    QBCore.Functions.TriggerCallback("qb-customs:server:GetLocations", function(locations)
+    ESX.TriggerServerCallback("esx-customs:server:GetLocations", function(locations)
         Config.Locations = locations
     end)
 end
@@ -914,19 +913,19 @@ function CheckRestrictions(location)
 end
 
 function SetupInteraction()
-    QBCore.Functions.TriggerCallback('qb-vehicletuning:server:IsMechanicAvailable', function(currentMechanics)
+    ESX.TriggerServerCallback('esx-vehicletuning:server:IsMechanicAvailable', function(currentMechanics)
         local text = CustomsData.drawtextui
         if PlayerData.job.name ~= 'mechanic' and Config.DisableWhenMechanicsOnline and currentMechanics >= Config.MinOnlineMechanics then
             text = text .. ' is currently unavailable. Please find a mechanic.'
         else
             if Config.UseRadial then
                 if not radialMenuItemId then
-                    radialMenuItemId = exports['qb-radialmenu']:AddOption({
+                    radialMenuItemId = exports['esx-radialmenu']:AddOption({
                         id = 'customs',
                         title = 'Enter Customs',
                         icon = 'wrench',
                         type = 'client',
-                        event = 'qb-customs:client:EnterCustoms',
+                        event = 'esx-customs:client:EnterCustoms',
                         shouldClose = true
                     })
                 end
@@ -935,7 +934,7 @@ function SetupInteraction()
                 CheckForKeypress()
             end
         end
-        exports['qb-core']:DrawText(text, 'left')
+        exports['esx-core']:DrawText(text, 'left')
     end)
 end
 
@@ -973,11 +972,11 @@ CreateThread(function()
                 elseif CustomsData['location'] == location and CustomsData['spot'] == _name then
                     CustomsData = {}
                     if Config.UseRadial and radialMenuItemId then
-                        exports['qb-radialmenu']:RemoveOption(radialMenuItemId)
+                        exports['esx-radialmenu']:RemoveOption(radialMenuItemId)
                         radialMenuItemId = nil
                     end
 
-                    exports['qb-core']:HideText()
+                    exports['esx-core']:HideText()
                 end
             end)
         end
@@ -1017,23 +1016,23 @@ RegisterNetEvent('QBCore:Client:OnJobUpdate', function(job)
     PlayerData.job = job
 end)
 
-RegisterNetEvent('qb-customs:client:UpdateLocation', function(location, type, key, value)
+RegisterNetEvent('esx-customs:client:UpdateLocation', function(location, type, key, value)
     Config.Locations[location][type][key] = value
 end)
 
-RegisterNetEvent("qb-customs:client:purchaseSuccessful", function()
+RegisterNetEvent("esx-customs:client:purchaseSuccessful", function()
     isPurchaseSuccessful = true
     attemptingPurchase = false
     QBCore.Functions.Notify("Purchase Successful")
 end)
 
-RegisterNetEvent("qb-customs:client:purchaseFailed", function()
+RegisterNetEvent("esx-customs:client:purchaseFailed", function()
     isPurchaseSuccessful = false
     attemptingPurchase = false
     QBCore.Functions.Notify("Not enough money", "error")
 end)
 
-RegisterNetEvent('qb-customs:client:EnterCustoms', function(override)
+RegisterNetEvent('esx-customs:client:EnterCustoms', function(override)
     if not override.coords or not override.heading then override = nil end
     if not IsPedInAnyVehicle(PlayerPedId(), false) or isPlyInBennys or (not next(CustomsData) and not override) then return end
     if not override and next(CustomsData) and not CheckRestrictions(CustomsData.location) then return end
